@@ -1,0 +1,6 @@
+const test=require('node:test');const assert=require('node:assert/strict');const fs=require('node:fs');const path=require('node:path');const root=path.resolve(__dirname,'..');const read=f=>fs.readFileSync(path.join(root,f),'utf8');
+test('installer is configured for Windows x64 NSIS',()=>{const p=JSON.parse(read('package.json'));assert.equal(p.build.win.target,'nsis');assert.match(p.scripts['dist:win'],/--x64/);assert.equal(p.build.nsis.oneClick,false)});
+test('Electron uses sandbox and context isolation',()=>{const s=read('main.js');assert.match(s,/contextIsolation:true/);assert.match(s,/nodeIntegration:false/);assert.match(s,/sandbox:true/)});
+test('renderer uses Supabase publishable key, not service role or Groq secret',()=>{const s=read('renderer.js');assert.match(s,/sb_publishable_/);assert.doesNotMatch(s,/gsk_[A-Za-z0-9]{20,}/);assert.doesNotMatch(s,/service_role/)});
+test('human review is required before AI observations are saved',()=>{const s=read('renderer.js');assert.match(s,/Apply reviewed entries/);assert.match(s,/confirm\(`/);assert.match(s,/reviewed_by:session.user.id/)});
+test('clinical prototype warnings are visible',()=>{const s=read('index.html');assert.match(s,/Risk identification ≠ diagnosis/);assert.match(s,/Qualified review required/)});
